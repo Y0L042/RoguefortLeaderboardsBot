@@ -66,7 +66,18 @@ Treat the token like a password. If it leaks, reset it in the Developer Portal.
 uv run src/main.py
 ```
 
-The bot posts the leaderboard on startup and refreshes it every 60 seconds.
+The bot posts the leaderboard on startup and refreshes it every 60 seconds. The message holds two boards:
+
+- **Swiftest**: wins first, then fewest turns.
+- **Mastery**: highest mastery score first.
+
+Scores come from the source named by the optional `SCORE_SOURCE` variable (default `mock`, fake data). To add a real source, write a class with an async `fetch()` in `src/scores.py` and register it in `SOURCES`.
+
+## Tests
+
+```sh
+uv run pytest
+```
 
 ## Troubleshooting
 
