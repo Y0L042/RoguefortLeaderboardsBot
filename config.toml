@@ -1,0 +1,40 @@
+# Leaderboard config. Reloaded on every refresh, so changes apply at the next refresh.
+#
+# Each [dungeons.<id>] block posts one message holding that dungeon's boards.
+# Set enabled = false to hide a dungeon, or a board to false to hide that board.
+# Dungeons are posted in this order; one enabled later is posted at the bottom.
+# Board types: swiftest, mastery (defined in BOARD_TYPES in src/leaderboard.py)
+
+# Seconds between refreshes (minimum 10)
+refresh_seconds = 60
+
+[dungeons.monadic]
+name = "The Monadic Descent"
+players = 1
+enabled = true
+boards = { swiftest = true, mastery = false }
+
+[dungeons.dyadic]
+name = "The Dyadic Vault"
+players = 2
+enabled = false
+boards = { swiftest = true, mastery = false }
+
+[dungeons.triadic]
+name = "The Triadic Gate"
+players = 3
+enabled = false
+boards = { swiftest = true, mastery = false }
+
+[dungeons.tetradic]
+name = "The Tetradic Keep"
+players = 4
+enabled = false
+boards = { swiftest = true, mastery = false }
+
+# Infinite dungeon: boards to be defined when it is announced
+[dungeons.infinite]
+name = "??? To Be Announced"
+players = 1
+enabled = false
+boards = {}
