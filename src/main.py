@@ -8,7 +8,7 @@ load_dotenv()
 CHANNEL_ID = int(os.environ["CHANNEL_ID"])
 DISCORD_TOKEN = os.environ["DISCORD_BOT"]
 client = discord.Client(intents=discord.Intents.default())
-message_id = None  # recovered from channel history on startup, so this doesn't need persisting
+message_id = None  # recovered from channel history on startup
 
 x = 7
 def fetch_scores():
@@ -17,16 +17,16 @@ def fetch_scores():
     global x
     x = x + 1
     return [
-        ("Merlinus", 12, 5, 4521, 87, 754 + x),
-        ("xXFireballXx", 11, 5, 4210, 79, 790 + x * 2),
-        ("Zaltharion", 10, 4, 3980, 64, 812 + x * 10),
-        ("PotionSeller", 9, 4, 3310, 51, 905 + x * 100),
-        ("Grimbeard", 8, 3, 2875, 42, 1010 + x * 5),
-        ("Hexorcist", 8, 3, 2640, 38, 1102),
-        ("Gandalfo", 7, 3, 2390, 33, 1187),
-        ("ManaPotato", 6, 2, 2015, 27, 1240),
-        ("Rincewand", 5, 2, 1780, 19, 1325),
-        ("NoobSlayer99", 4, 1, 1320, 12, 1410),
+        ("Merlinus", 12, 5, 7765, 87, 754 + x),
+        ("xXFireballXx", 11, 5, 6418, 79, 790 + x * 2),
+        ("Zaltharion", 10, 4, 5937, 64, 812 + x * 10),
+        ("PotionSeller", 9, 4, 4203, 51, 905 + x * 100),
+        ("Grimbeard", 8, 3, 3856, 42, 1010 + x * 5),
+        ("Hexorcist", 8, 3, 2391, 38, 1102),
+        ("Gandalfo", 7, 3, 1074, 33, 1187),
+        ("ManaPotato", 6, 2, 619, 27, 1240),
+        ("Rincewand", 5, 2, 582, 19, 1325),
+        ("NoobSlayer99", 4, 1, 347, 12, 1410),
     ]
 
 MEDALS = ["🥇", "🥈", "🥉"]
@@ -39,24 +39,35 @@ def format_time(total_seconds: int) -> str:
 
 def build_embed():
     rows = sorted(fetch_scores(), key=lambda row: row[3])[:10]  # fewest steps first
-    lines: list[str] = []
-    for i, (name, level, danger, steps, kills, seconds) in enumerate(rows):
-        name = discord.utils.escape_markdown(name)
-        stats = f"⭐ {level} · ☠️ {danger} · 👣 {steps:,} · ⚔️ {kills} · ⏱️ {format_time(seconds)}"
-        if i < 3:
-            # Podium: medal, bold name, stats quoted underneath
-            lines.append(f"{MEDALS[i]} **{name}**\n> {stats}")
-        else:
-            if i == 3:
-                lines.append(DIVIDER)
-            lines.append(f"{RANK_EMOJI[i - 3]} **{name}** — {stats}")
+
+    columns = [
+        ["Player"] + [name.replace("`", "'") for name, *_ in rows],
+        ["Lvl"] + [str(row[1]) for row in rows],
+        ["Danger"] + [str(row[2]) for row in rows],
+        ["Steps"] + [f"{row[3]:,}" for row in rows],
+        ["Kills"] + [str(row[4]) for row in rows],
+        ["Time"] + [format_time(row[5]) for row in rows],
+    ]
+    widths = [max(len(value) for value in column) for column in columns]
+
+    def format_row(r: int) -> str:
+        return " ".join(
+            f"`{column[r]:{'<' if c == 0 else '>'}{widths[c]}}`" for c, column in enumerate(columns)
+        )
+
+    lines = [f"#️⃣ {format_row(0)}", DIVIDER]
+    for i in range(len(rows)):
+        rank = MEDALS[i] if i < 3 else RANK_EMOJI[i - 3]
+        if i == 3:
+            lines.append(DIVIDER)
+        lines.append(f"{rank} {format_row(i + 1)}")
 
     embed = discord.Embed(
         title="🏆 Roguefort Hall of Fame 🏆",
         description=f"*The bravest adventurers to delve the depths*\n{DIVIDER}\n" + "\n".join(lines),
         colour=0xF1C40F,
     )
-    embed.set_footer(text="⭐ Level · ☠️ Danger · 👣 Steps · ⚔️ Kills · ⏱️ Time  •  Updated")
+    embed.set_footer(text="Updated")
     embed.timestamp = discord.utils.utcnow()
     return embed
 
@@ -76,7 +87,7 @@ async def refresh():
             await msg.edit(embed=embed)
             return
         except discord.NotFound:
-            pass  # message was deleted; post a new one
+            pass
     msg = await channel.send(embed=embed)
     message_id = msg.id
 
